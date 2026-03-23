@@ -4,7 +4,7 @@ import json
 import sqlite3
 from datetime import datetime
 
-from flask import Flask, Response, g, jsonify, render_template_string, request
+from flask import Flask, Response, g, jsonify, render_template_string, request, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -226,6 +226,13 @@ def results_by_exam(exam_id):
         rows=rows,
         exam_id=exam_id,
     )
+
+
+EXAMS_DIR = os.path.join(os.path.dirname(__file__), "exams")
+
+@app.get("/exam/<exam_id>")
+def serve_exam(exam_id):
+    return send_from_directory(EXAMS_DIR, f"{exam_id}.html")
 
 
 # ---------------------------------------------------------------------------

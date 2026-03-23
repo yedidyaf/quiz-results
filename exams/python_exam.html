@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בוחן Python – מכינה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f2ee;
+    --surface: #ffffff;
+    --surface-2: #f9f8f6;
+    --border: #ddd9d0;
+    --border-strong: #b8b0a0;
+    --text: #1a1814;
+    --text-muted: #6b6458;
+    --text-light: #9c9288;
+    --accent: #1d4ed8;
+    --accent-light: #dbeafe;
+    --accent-dark: #1e3a8a;
+    --correct: #15803d;
+    --correct-bg: #f0fdf4;
+    --correct-border: #86efac;
+    --wrong: #b91c1c;
+    --wrong-bg: #fef2f2;
+    --wrong-border: #fca5a5;
+    --warn: #b45309;
+    --warn-bg: #fffbeb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ─── HEADER ─── */
+  .exam-header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    box-shadow: var(--shadow);
+  }
+  .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .timer-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 4px 12px;
+    border-radius: var(--radius);
+    border: 1px solid #bfdbfe;
+    min-width: 72px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .timer-display.warn {
+    color: var(--warn);
+    background: var(--warn-bg);
+    border-color: #fcd34d;
+  }
+  .timer-display.danger {
+    color: var(--wrong);
+    background: var(--wrong-bg);
+    border-color: var(--wrong-border);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* ─── PROGRESS ─── */
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    position: sticky;
+    top: 56px;
+    z-index: 99;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  /* ─── CONTAINER ─── */
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* ─── LOGIN PAGE ─── */
+  #login-page {
+    max-width: 480px;
+    margin: 60px auto;
+    padding: 20px;
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 36px;
+    box-shadow: var(--shadow-md);
+  }
+  .login-card h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .login-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .field-group {
+    margin-bottom: 18px;
+  }
+  .field-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    direction: rtl;
+  }
+  .field-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
+  }
+  .field-group input.error {
+    border-color: var(--wrong);
+  }
+  .field-error {
+    font-size: 12px;
+    color: var(--wrong);
+    margin-top: 4px;
+    display: none;
+  }
+  .field-error.visible { display: block; }
+
+  .btn-start {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-start:hover { background: var(--accent-dark); }
+  .btn-start:active { transform: scale(0.99); }
+
+  .exam-info-box {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  .exam-info-box strong { color: var(--text); }
+
+  /* ─── ALREADY DONE ─── */
+  #already-done-page {
+    max-width: 460px;
+    margin: 80px auto;
+    padding: 20px;
+    text-align: center;
+  }
+  .done-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 48px 36px;
+    box-shadow: var(--shadow-md);
+  }
+  .done-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--wrong-bg);
+    border: 2px solid var(--wrong-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 22px;
+  }
+  .done-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+  .done-card p { font-size: 14px; color: var(--text-muted); }
+
+  /* ─── EXAM PAGE ─── */
+  #exam-page { display: none; }
+
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .section-divider::before {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-divider:first-child { margin-top: 0; }
+
+  /* ─── QUESTION CARD ─── */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .q-card.answered { opacity: 0.75; }
+  .q-card.correct-card { border-color: var(--correct-border); background: var(--correct-bg); }
+  .q-card.wrong-card  { border-color: var(--wrong-border);  background: var(--wrong-bg);  }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .q-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid #bfdbfe;
+  }
+  .q-num.correct-num { background: var(--correct-bg); color: var(--correct); border-color: var(--correct-border); }
+  .q-num.wrong-num   { background: var(--wrong-bg);   color: var(--wrong);   border-color: var(--wrong-border);   }
+
+  .q-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.55;
+  }
+
+  /* Code block */
+  .code-block {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 12px 0 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+    border: 1px solid #313244;
+    white-space: pre;
+  }
+  /* Syntax coloring */
+  .kw { color: #cba6f7; } /* keywords: def, for, while, if, print, return */
+  .fn { color: #89b4fa; } /* function names */
+  .str { color: #a6e3a1; } /* strings */
+  .num { color: #fab387; } /* numbers */
+  .cm { color: #6c7086; font-style: italic; } /* comments */
+  .op { color: #89dceb; } /* operators */
+  .var { color: #cdd6f4; } /* variables */
+  .bi { color: #f38ba8; } /* builtins: len, range, list, print */
+
+  /* Options */
+  .options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    text-align: right;
+    transition: all 0.15s;
+    width: 100%;
+    position: relative;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent-dark);
+  }
+  .option-btn:disabled { cursor: default; }
+  .option-btn.selected-correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    color: var(--correct);
+    font-weight: 600;
+  }
+  .option-btn.selected-wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+    color: var(--wrong);
+    font-weight: 600;
+  }
+  .option-btn.reveal-correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    color: var(--correct);
+  }
+
+  .opt-label {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .option-btn:hover:not(:disabled) .opt-label { border-color: var(--accent); color: var(--accent); }
+  .option-btn.selected-correct .opt-label { border-color: var(--correct); color: var(--correct); background: #dcfce7; }
+  .option-btn.selected-wrong   .opt-label { border-color: var(--wrong);   color: var(--wrong);   background: #fee2e2; }
+  .option-btn.reveal-correct   .opt-label { border-color: var(--correct); color: var(--correct); background: #dcfce7; }
+
+  .opt-text { flex: 1; }
+  .opt-text code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(0,0,0,0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .feedback-row {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+  }
+  .feedback-row.show { display: block; }
+  .feedback-row.fb-correct { background: #dcfce7; color: var(--correct); border: 1px solid var(--correct-border); }
+  .feedback-row.fb-wrong   { background: #fee2e2; color: var(--wrong);   border: 1px solid var(--wrong-border);   }
+  .feedback-row span { font-family: 'JetBrains Mono', monospace; }
+
+  /* ─── STICKY FOOTER ─── */
+  .exam-footer {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+  }
+  .footer-stats {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .footer-stats strong { color: var(--text); }
+  .btn-submit {
+    padding: 10px 28px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+  }
+  .btn-submit:hover:not(:disabled) { background: var(--accent-dark); }
+  .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ─── SUMMARY PAGE ─── */
+  #summary-page { display: none; }
+
+  .summary-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px 32px;
+    margin-bottom: 24px;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+  }
+  .score-ring {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) calc(var(--pct) * 1%), var(--border) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+  .score-ring-inner {
+    width: 78px;
+    height: 78px;
+    background: var(--surface);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-number { font-size: 24px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .score-label  { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .summary-hero h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .summary-hero .student-info { font-size: 14px; color: var(--text-muted); }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0 0;
+  }
+  .stat-box {
+    padding: 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat-box.correct-stat { background: var(--correct-bg); border-color: var(--correct-border); }
+  .stat-box.wrong-stat   { background: var(--wrong-bg);   border-color: var(--wrong-border);   }
+  .stat-box.skip-stat    { background: var(--surface-2);  }
+  .stat-val { font-size: 22px; font-weight: 800; }
+  .correct-stat .stat-val { color: var(--correct); }
+  .wrong-stat   .stat-val { color: var(--wrong); }
+  .stat-lbl { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .send-status {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    display: none;
+  }
+  .send-status.show { display: block; }
+  .send-status.success { background: var(--correct-bg); color: var(--correct); border: 1px solid var(--correct-border); }
+  .send-status.error   { background: var(--wrong-bg);   color: var(--wrong);   border: 1px solid var(--wrong-border);   }
+  .send-status.loading { background: var(--accent-light); color: var(--accent); border: 1px solid #bfdbfe; }
+
+  .summary-detail-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 28px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-q-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .summary-q-row.row-correct { border-color: var(--correct-border); }
+  .summary-q-row.row-wrong   { border-color: var(--wrong-border); }
+  .summary-q-row.row-skip    { opacity: 0.6; }
+  .sq-badge {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .sq-badge.c { background: #dcfce7; color: var(--correct); }
+  .sq-badge.w { background: #fee2e2; color: var(--wrong); }
+  .sq-badge.s { background: var(--border); color: var(--text-muted); }
+  .sq-info { flex: 1; color: var(--text-muted); }
+  .sq-info strong { color: var(--text); }
+
+  /* locked overlay */
+  .locked-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+  }
+  .locked-box {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 40px 36px;
+    text-align: center;
+    max-width: 380px;
+    box-shadow: var(--shadow-md);
+  }
+  .locked-box h2 { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--wrong); }
+  .locked-box p { font-size: 14px; color: var(--text-muted); }
+
+  @media (max-width: 520px) {
+    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-val { font-size: 18px; }
+    .q-card { padding: 18px; }
+    .exam-header { padding: 0 14px; }
+    .header-title { font-size: 13px; }
+    .container { padding: 20px 12px 80px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ ALREADY DONE ══════════════ -->
+<div id="already-done-page" style="display:none">
+  <div class="done-card">
+    <div class="done-icon">✕</div>
+    <h2>המבחן כבר הוגש</h2>
+    <p>לא ניתן להגיש את המבחן פעמיים מאותו דפדפן.</p>
+    <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">יש לך קוד אישי? הזן אותו כאן:</div>
+      <div style="display:flex;gap:10px;justify-content:center;align-items:center">
+        <input type="password" id="reset-code-inp" placeholder="קוד איפוס" maxlength="8"
+          style="padding:8px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'Heebo',sans-serif;font-size:15px;width:160px;text-align:center;direction:ltr;outline:none"
+          onkeydown="if(event.key==='Enter') tryResetCode()">
+        <button onclick="tryResetCode()" style="padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Heebo',sans-serif;font-size:14px;font-weight:600;cursor:pointer">אישור</button>
+      </div>
+      <div id="reset-code-err" style="color:var(--wrong);font-size:12px;margin-top:8px;display:none">קוד שגוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LOGIN PAGE ══════════════ -->
+<div id="login-page">
+  <div class="login-card">
+    <h1>בוחן Python</h1>
+    <div class="login-subtitle">מלא את הפרטים כדי להתחיל</div>
+
+    <div class="field-group">
+      <label>שם פרטי</label>
+      <input type="text" id="inp-first" placeholder="לדוגמה: יוסי" autocomplete="off">
+      <div class="field-error" id="err-first">שדה חובה</div>
+    </div>
+    <div class="field-group">
+      <label>שם משפחה</label>
+      <input type="text" id="inp-last" placeholder="לדוגמה: כהן" autocomplete="off">
+      <div class="field-error" id="err-last">שדה חובה</div>
+    </div>
+    <div class="field-group">
+      <label>סניף</label>
+      <select id="inp-branch" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'Heebo',sans-serif;font-size:15px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;direction:rtl;transition:border-color 0.2s,box-shadow 0.2s">
+        <option value="">– בחר סניף –</option>
+        <option value="ירושלים">ירושלים</option>
+        <option value="פתח תקוה">פתח תקוה</option>
+        <option value="נתיבות">נתיבות</option>
+      </select>
+      <div class="field-error" id="err-branch">יש לבחור סניף</div>
+    </div>
+
+    <button class="btn-start" onclick="startExam()">התחל מבחן</button>
+
+    <div class="exam-info-box">
+      <strong>פרטי המבחן:</strong><br>
+      30 שאלות אמריקאיות &nbsp;·&nbsp; משך: <strong>60 דקות</strong><br>
+      לאחר מענה על שאלה לא ניתן לחזור אליה.<br>
+      לא ניתן להגיש את המבחן פעמיים.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ EXAM PAGE ══════════════ -->
+<div id="exam-page">
+  <header class="exam-header">
+    <span class="header-title">בוחן Python</span>
+    <div class="header-meta">
+      <span id="hdr-student"></span>
+      <span class="timer-display" id="timer">60:00</span>
+    </div>
+  </header>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <div class="container" id="questions-container"></div>
+
+  <div class="exam-footer">
+    <div class="footer-stats">
+      ענית על <strong id="answered-count">0</strong> מתוך <strong>30</strong> שאלות
+    </div>
+    <button class="btn-submit" id="btn-submit" onclick="submitExam()">שלח מבחן</button>
+  </div>
+</div>
+
+<!-- ══════════════ SUMMARY PAGE ══════════════ -->
+<div id="summary-page">
+  <div class="container">
+    <div class="summary-hero">
+      <div class="score-ring" id="score-ring">
+        <div class="score-ring-inner">
+          <div class="score-number" id="score-display">0</div>
+          <div class="score-label">ציון</div>
+        </div>
+      </div>
+      <h2>המבחן הסתיים</h2>
+      <div class="student-info" id="summary-student-info"></div>
+      <div class="stats-row">
+        <div class="stat-box correct-stat"><div class="stat-val" id="cnt-correct">0</div><div class="stat-lbl">נכון</div></div>
+        <div class="stat-box wrong-stat">  <div class="stat-val" id="cnt-wrong">0</div>  <div class="stat-lbl">שגוי</div></div>
+        <div class="stat-box skip-stat">   <div class="stat-val" id="cnt-skip">0</div>   <div class="stat-lbl">לא נענה</div></div>
+      </div>
+      <div class="send-status" id="send-status"></div>
+      <button onclick="downloadPDF()" id="btn-pdf" style="margin-top:16px;padding:9px 22px;background:var(--surface-2);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius);font-family:'Heebo',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:none;transition:background 0.2s" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--surface-2)'">
+        הורד סיכום PDF
+      </button>
+    </div>
+
+    <div class="summary-detail-title">פירוט תשובות</div>
+    <div id="summary-detail"></div>
+  </div>
+</div>
+
+<!-- ══════════════ LOCKED OVERLAY ══════════════ -->
+<div class="locked-overlay" id="locked-overlay">
+  <div class="locked-box">
+    <h2>הזמן נגמר</h2>
+    <p>פג הזמן המוקצב לבחינה. המבחן ננעל ולא ניתן עוד לשלוח.</p>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════
+const EXAM_ID    = "exam_netivot_sof";
+const API_URL    = "https://quiz-results.onrender.com/results";
+const TOTAL_TIME = 60 * 60; // seconds
+const LS_KEY     = "exam_done_" + EXAM_ID;
+
+// correct answers: index = q number (1-based), value = 0-based option index
+const ANSWERS = {
+  1:1, 2:1, 3:2, 4:1, 5:0,
+  6:2, 7:1, 8:1, 9:1, 10:2,
+  11:2, 12:2, 13:1, 14:2, 15:2,
+  16:2, 17:2, 18:0, 19:1, 20:1,
+  21:2, 22:1, 23:2, 24:2, 25:1,
+  26:2, 27:1, 28:1, 29:3, 30:2
+};
+
+// helper to render inline code in option text
+function renderOpt(txt) {
+  const hasArray  = /[\[\(]/.test(txt);
+  const hasHebrew = /[\u0590-\u05FF]/.test(txt);
+  let rendered = txt.replace(/`([^`]+)`/g, '<code>$1</code>');
+  if (hasArray || (!hasHebrew && txt.trim() !== "")) {
+    rendered = `<span dir="ltr" style="unicode-bidi:isolate;display:inline-block">${rendered}</span>`;
+  }
+  return rendered;
+}
+
+const QUESTIONS = [
+  // ─── לולאות ───
+  {
+    section: "חלק א׳ – לולאות",
+    text: "מה יודפס בריצת הקוד הבא?",
+    code: `for i in range(3):\n    print(i)`,
+    opts: ["1 2 3", "0 1 2", "0 1 2 3", "1 2"]
+  },
+  {
+    text: "כמה פעמים תורץ הלולאה הבאה?",
+    code: `i = 10\nwhile i > 0:\n    i -= 3`,
+    opts: ["3", "4", "10", "5"]
+  },
+  {
+    text: "מה הפלט של הקוד הבא?",
+    code: `total = 0\nfor n in [5, 10, 15]:\n    total += n\nprint(total)`,
+    opts: ["15", "3", "30", "0"]
+  },
+  {
+    text: "מה תפקיד `break` בלולאה?",
+    code: null,
+    opts: ["ממשיכה לאיטרציה הבאה", "מפסיקה את הלולאה לחלוטין", "מחזירה ערך מהלולאה", "מאתחלת את הלולאה מחדש"]
+  },
+  {
+    text: "מה יודפס?",
+    code: `for i in range(4):\n    print(i * 2, end=" ")`,
+    opts: ["0 2 4 6", "1 2 3 4", "2 4 6 8", "0 1 2 3"]
+  },
+  // ─── פונקציות ───
+  {
+    section: "חלק ב׳ – פונקציות",
+    text: "מה יודפס?",
+    code: `def greet(name):\n    print("Hello " + name)\n\ngreet("Alice")`,
+    opts: ["שגיאה", "Hello", "Hello Alice", "None"]
+  },
+  {
+    text: "מה מחזירה הפונקציה?",
+    code: `def calc(x, y):\n    return x * y + 1\n\nresult = calc(3, 4)`,
+    opts: ["12", "13", "7", "None"]
+  },
+  {
+    text: "מה ההבדל בין פרמטר לארגומנט?",
+    code: null,
+    opts: [
+      "אין הבדל, שני המונחים זהים",
+      "פרמטר הוא המשתנה בהגדרת הפונקציה, ארגומנט הוא הערך שמועבר בקריאה",
+      "ארגומנט הוא המשתנה בהגדרת הפונקציה, פרמטר הוא הערך שמועבר בקריאה",
+      "פרמטר הוא ערך החזרה של הפונקציה"
+    ]
+  },
+  {
+    text: "מה יודפס?",
+    code: `def double(x):\n    x = x * 2\n\nval = 5\ndouble(val)\nprint(val)`,
+    opts: ["10", "5", "None", "שגיאה"]
+  },
+  {
+    text: "פונקציה שאינה מכילה `return` מחזירה:",
+    code: null,
+    opts: ["0", "שגיאה", "`None`", 'ערך ריק `""`']
+  },
+  // ─── מערכים ───
+  {
+    section: "חלק ג׳ – מערכים (רשימות)",
+    text: "מה הפלט?",
+    code: `lst = [10, 20, 30, 40]\nprint(lst[-1])`,
+    opts: ["10", "שגיאה", "40", "30"]
+  },
+  {
+    text: "איזו **מתודה** מוסיפה פריט לסוף הרשימה?",
+    code: null,
+    opts: ["`insert()`", "`add()`", "`append()`", "`extend()`"]
+  },
+  {
+    text: "מה הפלט?",
+    code: `a = [1, 2, 3]\nb = a\nb.append(4)\nprint(a)`,
+    opts: ["[1, 2, 3]", "[1, 2, 3, 4]", "שגיאה", "[4]"]
+  },
+  {
+    text: "כיצד ניתן לגשת לאיבר השלישי ברשימה `data`?",
+    code: null,
+    opts: ["`data[3]`", "`data(2)`", "`data[2]`", "`data[-3]`"]
+  },
+  {
+    text: "מה יחזיר `len([[], [], []])`?",
+    code: null,
+    opts: ["0", "6", "3", "שגיאה"]
+  },
+  // ─── טווח ואינדקסים ───
+  {
+    section: "חלק ד׳ – טווח ואינדקסים",
+    text: "מה הפלט?",
+    code: `lst = [10, 20, 30, 40, 50, 60]\nprint(lst[1:4])`,
+    opts: ["[10, 20, 30, 40]", "[20, 30, 40, 50]", "[20, 30, 40]", "[30, 40, 50]"]
+  },
+  {
+    text: "מה יודפס?",
+    code: `words = ["apple", "banana", "avocado"]\ncount = 0\nfor word in words:\n    for letter in word:\n        if letter == "a":\n            count += 1\nprint(count)`,
+    opts: ["3", "5", "6", "4"]
+  },
+  {
+    text: "מה הפלט?",
+    code: `lst = [10, 20, 30, 40, 50]\nprint(lst[::2])`,
+    opts: ["[10, 30, 50]", "[20, 40]", "[10, 20]", "[50, 40, 30, 20, 10]"]
+  },
+  {
+    text: "מה הפלט?",
+    code: `lst = [1, 2, 3, 4, 5]\nprint(lst[::-1])`,
+    opts: ["[1, 2, 3, 4, 5]", "[5, 4, 3, 2, 1]", "שגיאה", "[5]"]
+  },
+  {
+    text: "מה הפלט?",
+    code: `lst = [100, 200, 300, 400]\nprint(lst[0] + lst[2])`,
+    opts: ["300", "400", "500", "600"]
+  },
+  // ─── מילונים ───
+  {
+    section: "חלק ה׳ – מילונים",
+    text: "מה הפלט?",
+    code: `d = {"a": 1, "b": 2, "c": 3}\nprint(d["b"])`,
+    opts: ["1", '"b"', "2", "שגיאה"]
+  },
+  {
+    text: 'כיצד מוסיפים מפתח חדש `"d"` עם ערך `4` למילון `d`?',
+    code: null,
+    opts: ['`d.add("d", 4)`', '`d["d"] = 4`', '`d.insert("d", 4)`', '`d.append({"d": 4})`']
+  },
+  {
+    text: 'נתון הקוד הבא. מה צריך לכתוב במקום `____` כדי שיודפס `"תל אביב"`?',
+    code: `cities = [\n    {"name": "ירושלים", "pop": 900000},\n    {"name": "תל אביב", "pop": 460000},\n    {"name": "חיפה",    "pop": 285000}\n]\n\nprint(____["name"])`,
+    opts: ["`cities[0]`", "`cities[2]`", "`cities[1]`", '`cities["name"]`']
+  },
+  {
+    text: "נתון הקוד הבא. מה צריך לכתוב במקום `____` כדי שיודפס `285000`?",
+    code: `cities = [\n    {"name": "ירושלים", "pop": 900000},\n    {"name": "תל אביב", "pop": 460000},\n    {"name": "חיפה",    "pop": 285000}\n]\n\nprint(____)`,
+    opts: ['`cities[2]["name"]`', '`cities["pop"][2]`', '`cities[2]["pop"]`', '`cities[3]["pop"]`']
+  },
+  {
+    text: "נתון הקוד הבא. מה יודפס?",
+    code: `students = [\n    {"name": "אורי",  "grade": 90},\n    {"name": "מיכל", "grade": 75},\n    {"name": "דוד",  "grade": 88}\n]\n\nprint(students[0]["grade"] + students[2]["grade"])`,
+    opts: ["165", "178", "163", "90"]
+  },
+  // ─── mutable / immutable ───
+  {
+    section: "חלק ו׳ – Mutable / Immutable",
+    text: "אילו מהבאים הוא **לא ניתן לשינוי** (immutable)?",
+    code: null,
+    opts: ["list", "dict", "tuple", "set"]
+  },
+  {
+    text: "מה יקרה בניסיון הבא?",
+    code: `t = (1, 2, 3)\nt[0] = 99`,
+    opts: ["t יהפוך ל-(99, 2, 3)", "שגיאת TypeError", "לא יקרה כלום", "שגיאת IndexError"]
+  },
+  {
+    text: "מה ההבדל בין `list` ל-`tuple`?",
+    code: null,
+    opts: [
+      "tuple יכול להכיל רק מספרים",
+      "list ניתן לשינוי, tuple לא ניתן לשינוי",
+      "tuple ניתן לשינוי, list לא ניתן לשינוי",
+      "אין הבדל פונקציונלי"
+    ]
+  },
+  {
+    text: "אילו מהבאים הוא **ניתן לשינוי** (mutable)?",
+    code: null,
+    opts: ["int", "str", "tuple", "list"]
+  },
+  {
+    text: "מה הפלט?",
+    code: `s = "hello"\ns[0] = "H"\nprint(s)`,
+    opts: ['"Hello"', '"hello"', "שגיאת TypeError", '"H"']
+  }
+];
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+let studentFirst = "", studentLast = "", studentBranch = "";
+let studentName  = "";
+let userAnswers  = {}; // qNum(1-based) -> chosen option index
+let answeredCount = 0;
+let timerInterval = null;
+let timeLeft      = TOTAL_TIME;
+let examLocked    = false;
+
+// ════════════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════════════
+const RESET_CODE = "44448888";
+
+window.onload = () => {
+  if (localStorage.getItem(LS_KEY)) {
+    document.getElementById("login-page").style.display = "none";
+    document.getElementById("already-done-page").style.display = "block";
+  }
+};
+
+function tryResetCode() {
+  const val = document.getElementById("reset-code-inp").value.trim();
+  const errEl = document.getElementById("reset-code-err");
+  if (val === RESET_CODE) {
+    localStorage.removeItem(LS_KEY);
+    document.getElementById("already-done-page").style.display = "none";
+    document.getElementById("login-page").style.display = "block";
+  } else {
+    errEl.style.display = "block";
+    setTimeout(() => { errEl.style.display = "none"; }, 2000);
+  }
+}
+
+// ════════════════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════════════════
+function startExam() {
+  const first  = document.getElementById("inp-first").value.trim();
+  const last   = document.getElementById("inp-last").value.trim();
+  const branch = document.getElementById("inp-branch").value.trim();
+  let ok = true;
+  ["first","last"].forEach(f => {
+    const val = f === "first" ? first : last;
+    const el  = document.getElementById("err-" + f);
+    const inp = document.getElementById("inp-" + f);
+    if (!val) { el.classList.add("visible"); inp.classList.add("error"); ok = false; }
+    else       { el.classList.remove("visible"); inp.classList.remove("error"); }
+  });
+  // validate branch select
+  const branchEl = document.getElementById("inp-branch");
+  const errBranch = document.getElementById("err-branch");
+  if (!branch) { errBranch.classList.add("visible"); branchEl.style.borderColor = "var(--wrong)"; ok = false; }
+  else          { errBranch.classList.remove("visible"); branchEl.style.borderColor = ""; }
+  if (!ok) return;
+
+  studentFirst  = first;
+  studentLast   = last;
+  studentBranch = branch;
+  studentName   = `${first} ${last} – ${branch}`;
+
+  document.getElementById("login-page").style.display   = "none";
+  document.getElementById("exam-page").style.display    = "block";
+  document.getElementById("hdr-student").textContent    = studentName;
+
+  buildQuestions();
+  startTimer();
+}
+
+// ════════════════════════════════════════════════
+//  BUILD QUESTIONS
+// ════════════════════════════════════════════════
+const LABELS = ["א", "ב", "ג", "ד"];
+
+function renderText(txt) {
+  // Bold **text** and inline `code`
+  return txt
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code style="font-family:\'JetBrains Mono\',monospace;font-size:13px;background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:4px">$1</code>');
+}
+
+function buildQuestions() {
+  const container = document.getElementById("questions-container");
+  let html = "";
+  QUESTIONS.forEach((q, idx) => {
+    const num = idx + 1;
+    if (q.section) {
+      html += `<div class="section-divider">${q.section}</div>`;
+    }
+    const codeBlock = q.code
+      ? `<div class="code-block">${escapeHtml(q.code)}</div>`
+      : "";
+    const optsHtml = q.opts.map((opt, oi) => `
+      <button class="option-btn" id="opt-${num}-${oi}" onclick="chooseAnswer(${num},${oi})" data-q="${num}" data-i="${oi}">
+        <span class="opt-label">${LABELS[oi]}</span>
+        <span class="opt-text">${renderOpt(opt)}</span>
+      </button>`).join("");
+
+    html += `
+    <div class="q-card" id="qcard-${num}">
+      <div class="q-header">
+        <div class="q-num" id="qnum-${num}">${num}</div>
+        <div class="q-text">${renderText(q.text)}</div>
+      </div>
+      ${codeBlock}
+      <div class="options-grid">${optsHtml}</div>
+      <div class="feedback-row" id="fb-${num}"></div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// ════════════════════════════════════════════════
+//  ANSWER
+// ════════════════════════════════════════════════
+function chooseAnswer(qNum, optIdx) {
+  if (examLocked) return;
+  if (userAnswers[qNum] !== undefined) return; // already answered
+
+  userAnswers[qNum] = optIdx;
+  answeredCount++;
+
+  const correct = ANSWERS[qNum];
+  const isRight = optIdx === correct;
+  const card    = document.getElementById("qcard-" + qNum);
+  const numEl   = document.getElementById("qnum-" + qNum);
+  const fb      = document.getElementById("fb-" + qNum);
+
+  // Disable all buttons for this question
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`opt-${qNum}-${i}`);
+    btn.disabled = true;
+    if (i === optIdx && isRight)  btn.classList.add("selected-correct");
+    if (i === optIdx && !isRight) btn.classList.add("selected-wrong");
+    if (!isRight && i === correct) btn.classList.add("reveal-correct");
+  }
+
+  card.classList.add("answered");
+  card.classList.add(isRight ? "correct-card" : "wrong-card");
+  numEl.classList.add(isRight ? "correct-num" : "wrong-num");
+
+  if (isRight) {
+    fb.className = "feedback-row show fb-correct";
+    fb.textContent = "✓ תשובה נכונה";
+  } else {
+    const correctLabel = LABELS[correct];
+    const correctText  = QUESTIONS[qNum-1].opts[correct];
+    fb.className = "feedback-row show fb-wrong";
+    fb.innerHTML = `✗ תשובה שגויה &nbsp;·&nbsp; התשובה הנכונה היא <span>${correctLabel}. ${renderOpt(correctText)}</span>`;
+  }
+
+  updateFooter();
+}
+
+function updateFooter() {
+  document.getElementById("answered-count").textContent = answeredCount;
+  const pct = (answeredCount / QUESTIONS.length) * 100;
+  document.getElementById("progress-bar").style.width = pct + "%";
+  document.getElementById("btn-submit").disabled = (answeredCount === 0);
+}
+
+// ════════════════════════════════════════════════
+//  TIMER
+// ════════════════════════════════════════════════
+function startTimer() {
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      examLocked = true;
+      document.getElementById("locked-overlay").style.display = "flex";
+      document.getElementById("btn-submit").disabled = true;
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const el  = document.getElementById("timer");
+  const m   = Math.floor(timeLeft / 60);
+  const s   = timeLeft % 60;
+  el.textContent = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  el.className = "timer-display";
+  if (timeLeft <= 300 && timeLeft > 60) el.classList.add("warn");
+  if (timeLeft <= 60)                   el.classList.add("danger");
+}
+
+// ════════════════════════════════════════════════
+//  SUBMIT
+// ════════════════════════════════════════════════
+async function submitExam() {
+  if (examLocked && timeLeft <= 0) return;
+  if (answeredCount === 0) return;
+
+  // Build payload
+  const total    = QUESTIONS.length;
+  const perQ     = 100 / total;
+  let correct    = 0;
+  const answers  = {};
+  for (let q = 1; q <= total; q++) {
+    const chosen = userAnswers[q];
+    answers["q" + q] = chosen !== undefined ? LABELS[chosen] : "–";
+    if (chosen === ANSWERS[q]) correct++;
+  }
+  const score = Math.round(correct * perQ * 10) / 10;
+
+  clearInterval(timerInterval);
+  examLocked = true;
+  document.getElementById("btn-submit").disabled = true;
+
+  // Show summary
+  showSummary(score, correct, answers);
+
+  // Send to server
+  const payload = {
+    student_name: studentName,
+    exam_id: EXAM_ID,
+    answers,
+    score
+  };
+
+  const statusEl = document.getElementById("send-status");
+  statusEl.className = "send-status show loading";
+  statusEl.textContent = "שולח...";
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      statusEl.className = "send-status show success";
+      statusEl.textContent = "המבחן נשלח בהצלחה";
+      localStorage.setItem(LS_KEY, "1");
+    } else {
+      throw new Error("server error");
+    }
+  } catch {
+    statusEl.className = "send-status show error";
+    statusEl.textContent = "שגיאה בשליחה – המבחן לא נשלח. פנה למורה.";
+  }
+}
+
+// ════════════════════════════════════════════════
+//  SUMMARY
+// ════════════════════════════════════════════════
+function showSummary(score, correctCount, answers) {
+  document.getElementById("exam-page").style.display    = "none";
+  document.getElementById("summary-page").style.display = "block";
+
+  const wrong = Object.keys(userAnswers).filter(q => userAnswers[q] !== ANSWERS[+q]).length;
+  const skip  = QUESTIONS.length - Object.keys(userAnswers).length;
+
+  document.getElementById("score-display").textContent      = score.toFixed(1);
+  document.getElementById("score-ring").style.setProperty("--pct", score);
+  document.getElementById("summary-student-info").textContent = studentName;
+  document.getElementById("cnt-correct").textContent = correctCount;
+  document.getElementById("cnt-wrong").textContent   = wrong;
+  document.getElementById("cnt-skip").textContent    = skip;
+
+  // detail
+  let detail = "";
+  QUESTIONS.forEach((q, idx) => {
+    const num    = idx + 1;
+    const chosen = userAnswers[num];
+    let cls, badge, info;
+    if (chosen === undefined) {
+      cls   = "row-skip";
+      badge = `<div class="sq-badge s">–</div>`;
+      info  = `<div class="sq-info"><strong>שאלה ${num}</strong> – לא נענה</div>`;
+    } else if (chosen === ANSWERS[num]) {
+      cls   = "row-correct";
+      badge = `<div class="sq-badge c">✓</div>`;
+      info  = `<div class="sq-info"><strong>שאלה ${num}</strong> – ${LABELS[chosen]}. נכון</div>`;
+    } else {
+      cls   = "row-wrong";
+      badge = `<div class="sq-badge w">✗</div>`;
+      info  = `<div class="sq-info"><strong>שאלה ${num}</strong> – בחרת ${LABELS[chosen]}, נכון: ${LABELS[ANSWERS[num]]}</div>`;
+    }
+    detail += `<div class="summary-q-row ${cls}">${badge}${info}</div>`;
+  });
+  document.getElementById("summary-detail").innerHTML = detail;
+  // Show PDF button once summary is ready
+  document.getElementById("btn-pdf").style.display = "inline-block";
+}
+
+// ════════════════════════════════════════════════
+//  PDF DOWNLOAD
+// ════════════════════════════════════════════════
+function downloadPDF() {
+  const LABELS_HE = ["א", "ב", "ג", "ד"];
+  const total   = QUESTIONS.length;
+  const perQ    = 100 / total;
+  let correct   = 0, wrong = 0, skip = 0;
+
+  for (let q = 1; q <= total; q++) {
+    const chosen = userAnswers[q];
+    if (chosen === undefined) skip++;
+    else if (chosen === ANSWERS[q]) correct++;
+    else wrong++;
+  }
+  const score = Math.round(correct * perQ * 10) / 10;
+
+  let rows = "";
+  QUESTIONS.forEach((q, idx) => {
+    const num    = idx + 1;
+    const chosen = userAnswers[num];
+    let status, chosenLbl, correctLbl, bgColor;
+    correctLbl = LABELS_HE[ANSWERS[num]];
+    if (chosen === undefined) {
+      status = "לא נענה"; chosenLbl = "–"; bgColor = "#f3f4f6";
+    } else if (chosen === ANSWERS[num]) {
+      status = "נכון"; chosenLbl = LABELS_HE[chosen]; bgColor = "#f0fdf4";
+    } else {
+      status = "שגוי"; chosenLbl = LABELS_HE[chosen]; bgColor = "#fef2f2";
+    }
+    // strip markdown/backticks from question text
+    const qText = q.text.replace(/`([^`]+)`/g, '$1').replace(/\*\*(.+?)\*\*/g, '$1');
+    rows += `<tr style="background:${bgColor}">
+      <td style="padding:6px 10px;border:1px solid #e5e7eb;text-align:center;font-weight:600">${num}</td>
+      <td style="padding:6px 10px;border:1px solid #e5e7eb;font-size:12px;direction:rtl">${qText}</td>
+      <td style="padding:6px 10px;border:1px solid #e5e7eb;text-align:center">${chosenLbl}</td>
+      <td style="padding:6px 10px;border:1px solid #e5e7eb;text-align:center">${correctLbl}</td>
+      <td style="padding:6px 10px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:${chosen===undefined?'#6b7280':chosen===ANSWERS[num]?'#15803d':'#b91c1c'}">${status}</td>
+    </tr>`;
+  });
+
+  const now = new Date().toLocaleDateString('he-IL');
+  const html = `<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; direction: rtl; margin: 30px; color: #1a1a1a; font-size: 13px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; margin-bottom: 20px; font-size: 13px; }
+  .score-box { display: inline-block; background: #dbeafe; border: 2px solid #93c5fd; border-radius: 8px; padding: 10px 24px; margin-bottom: 20px; }
+  .score-box .sc { font-size: 28px; font-weight: 800; color: #1d4ed8; }
+  .score-box .sl { font-size: 12px; color: #555; }
+  .stats { display: flex; gap: 16px; margin-bottom: 24px; }
+  .stat { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+  .sc-g { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+  .sc-r { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
+  .sc-s { background: #f3f4f6; border: 1px solid #d1d5db; color: #4b5563; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1d4ed8; color: #fff; padding: 8px 10px; border: 1px solid #1e3a8a; font-size: 13px; }
+  @media print { body { margin: 15px; } }
+</style></head><body>
+<h1>בוחן Python – סיכום</h1>
+<div class="meta">תלמיד: <strong>${studentName}</strong> &nbsp;|&nbsp; תאריך: ${now}</div>
+<div class="score-box"><div class="sc">${score.toFixed(1)}</div><div class="sl">ציון</div></div>
+<div class="stats">
+  <div class="stat sc-g">נכון: ${correct}</div>
+  <div class="stat sc-r">שגוי: ${wrong}</div>
+  <div class="stat sc-s">לא נענה: ${skip}</div>
+</div>
+<table>
+  <thead><tr>
+    <th>#</th><th>שאלה</th><th>בחרת</th><th>נכון</th><th>תוצאה</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+</body></html>`;
+
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `בוחן-Python-${studentFirst}-${studentLast}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
