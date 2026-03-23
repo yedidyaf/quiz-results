@@ -1,8 +1,10 @@
+import csv
+import io
 import json
 import sqlite3
 from datetime import datetime
 
-from flask import Flask, g, jsonify, render_template_string, request
+from flask import Flask, Response, g, jsonify, render_template_string, request
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -89,6 +91,11 @@ RESULTS_TEMPLATE = """
       for exam <strong>{{ exam_id }}</strong> &mdash;
       <a href="/results">View all exams</a>
     {% endif %}
+    <a href="/results/export{% if exam_id %}?exam_id={{ exam_id }}{% endif %}"
+       style="margin-left:1rem; background:#4f46e5; color:#fff; padding:.35rem .8rem;
+              border-radius:5px; font-size:.85rem;">
+      Download CSV
+    </a>
   </p>
   {% if rows %}
   <table>
@@ -175,6 +182,35 @@ def all_results():
         title="All Quiz Results",
         rows=rows,
         exam_id=None,
+    )
+
+
+@app.get("/results/export")
+def export_csv():
+    exam_id = request.args.get("exam_id")
+    if exam_id:
+        rows = get_db().execute(
+            "SELECT * FROM results WHERE exam_id = ? ORDER BY submitted_at DESC",
+            (exam_id,),
+        ).fetchall()
+        filename = f"results_{exam_id}.csv"
+    else:
+        rows = get_db().execute(
+            "SELECT * FROM results ORDER BY submitted_at DESC"
+        ).fetchall()
+        filename = "results_all.csv"
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["id", "student_name", "exam_id", "answers", "score", "submitted_at"])
+    for row in rows:
+        writer.writerow([row["id"], row["student_name"], row["exam_id"],
+                         row["answers"], row["score"], row["submitted_at"]])
+
+    return Response(
+        "\ufeff" + buf.getvalue(),          # BOM so Excel opens Hebrew names correctly
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
