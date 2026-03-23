@@ -1274,7 +1274,7 @@ function downloadPDF() {
   table { width: 100%; border-collapse: collapse; }
   th { background: #1d4ed8; color: #fff; padding: 8px 10px; border: 1px solid #1e3a8a; font-size: 13px; }
   @media print { body { margin: 15px; } }
-</style></head><body>
+<\/style><\/head><body>
 <h1>בוחן Python – סיכום</h1>
 <div class="meta">תלמיד: <strong>${studentName}</strong> &nbsp;|&nbsp; תאריך: ${now}</div>
 <div class="score-box"><div class="sc">${score.toFixed(1)}</div><div class="sl">ציון</div></div>
@@ -1286,10 +1286,10 @@ function downloadPDF() {
 <table>
   <thead><tr>
     <th>#</th><th>שאלה</th><th>בחרת</th><th>נכון</th><th>תוצאה</th>
-  </tr></thead>
+  <\/tr><\/thead>
   <tbody>${rows}</tbody>
-</table>
-</body></html>`;
+<\/table>
+<\/body><\/html>`;
 
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });
   const url  = URL.createObjectURL(blob);
