@@ -1,19 +1,18 @@
 import csv
 import io
 import json
-import sqlite3
+import os
 from datetime import datetime
 
+import psycopg2
+import psycopg2.extras
 from flask import Flask, Response, g, jsonify, render_template_string, request, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-import os
-
-# On Render a persistent disk is mounted at /data; fall back to local for dev.
-DATABASE = os.path.join(os.environ.get("DB_DIR", "."), "results.db")
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 # ---------------------------------------------------------------------------
 # Database helpers
@@ -22,8 +21,7 @@ DATABASE = os.path.join(os.environ.get("DB_DIR", "."), "results.db")
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
+        db = g._database = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     return db
 
 
@@ -37,18 +35,19 @@ def close_db(exception):
 def init_db():
     with app.app_context():
         db = get_db()
-        db.execute(
-            """
-            CREATE TABLE IF NOT EXISTS results (
-                id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                student_name TEXT    NOT NULL,
-                exam_id      TEXT    NOT NULL,
-                answers      TEXT    NOT NULL,
-                score        REAL    NOT NULL,
-                submitted_at TEXT    NOT NULL
+        with db.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS results (
+                    id           SERIAL PRIMARY KEY,
+                    student_name TEXT   NOT NULL,
+                    exam_id      TEXT   NOT NULL,
+                    answers      TEXT   NOT NULL,
+                    score        REAL   NOT NULL,
+                    submitted_at TEXT   NOT NULL
+                )
+                """
             )
-            """
-        )
         db.commit()
 
 
@@ -162,21 +161,24 @@ def submit_result():
     submitted_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
     db = get_db()
-    cursor = db.execute(
-        "INSERT INTO results (student_name, exam_id, answers, score, submitted_at) "
-        "VALUES (?, ?, ?, ?, ?)",
-        (student_name, exam_id, answers_json, score, submitted_at),
-    )
+    with db.cursor() as cur:
+        cur.execute(
+            "INSERT INTO results (student_name, exam_id, answers, score, submitted_at) "
+            "VALUES (%s, %s, %s, %s, %s) RETURNING id",
+            (student_name, exam_id, answers_json, score, submitted_at),
+        )
+        new_id = cur.fetchone()["id"]
     db.commit()
 
-    return jsonify({"id": cursor.lastrowid, "message": "Result saved"}), 201
+    return jsonify({"id": new_id, "message": "Result saved"}), 201
 
 
 @app.get("/results")
 def all_results():
-    rows = get_db().execute(
-        "SELECT * FROM results ORDER BY submitted_at DESC"
-    ).fetchall()
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("SELECT * FROM results ORDER BY submitted_at DESC")
+        rows = cur.fetchall()
     return render_template_string(
         RESULTS_TEMPLATE,
         title="All Quiz Results",
@@ -188,17 +190,18 @@ def all_results():
 @app.get("/results/export")
 def export_csv():
     exam_id = request.args.get("exam_id")
-    if exam_id:
-        rows = get_db().execute(
-            "SELECT * FROM results WHERE exam_id = ? ORDER BY submitted_at DESC",
-            (exam_id,),
-        ).fetchall()
-        filename = f"results_{exam_id}.csv"
-    else:
-        rows = get_db().execute(
-            "SELECT * FROM results ORDER BY submitted_at DESC"
-        ).fetchall()
-        filename = "results_all.csv"
+    db = get_db()
+    with db.cursor() as cur:
+        if exam_id:
+            cur.execute(
+                "SELECT * FROM results WHERE exam_id = %s ORDER BY submitted_at DESC",
+                (exam_id,),
+            )
+            filename = f"results_{exam_id}.csv"
+        else:
+            cur.execute("SELECT * FROM results ORDER BY submitted_at DESC")
+            filename = "results_all.csv"
+        rows = cur.fetchall()
 
     buf = io.StringIO()
     writer = csv.writer(buf)
@@ -208,7 +211,7 @@ def export_csv():
                          row["answers"], row["score"], row["submitted_at"]])
 
     return Response(
-        "\ufeff" + buf.getvalue(),          # BOM so Excel opens Hebrew names correctly
+        "\ufeff" + buf.getvalue(),
         mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
@@ -216,10 +219,13 @@ def export_csv():
 
 @app.get("/results/<exam_id>")
 def results_by_exam(exam_id):
-    rows = get_db().execute(
-        "SELECT * FROM results WHERE exam_id = ? ORDER BY submitted_at DESC",
-        (exam_id,),
-    ).fetchall()
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM results WHERE exam_id = %s ORDER BY submitted_at DESC",
+            (exam_id,),
+        )
+        rows = cur.fetchall()
     return render_template_string(
         RESULTS_TEMPLATE,
         title=f"Results — Exam {exam_id}",
